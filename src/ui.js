@@ -48,6 +48,7 @@ export class UI {
     this._app.innerHTML = `
       <div class="quiz-header">
         <span class="progress-text">Question ${index + 1} of ${total}</span>
+        <span class="streak-badge"></span>
         <span class="score-display">Score: <strong>${score}</strong></span>
       </div>
       <div class="screen-card">
@@ -71,7 +72,7 @@ export class UI {
     this._timer.stop();
     const result = this._engine.answer(selectedIndex);
     const { score } = this._engine.getState();
-    this._showFeedback(selectedIndex, result.correctIndex, score);
+    this._showFeedback(selectedIndex, result.correctIndex, score, result.pointsEarned, result.multiplier, result.streak);
 
     setTimeout(() => {
       if (result.isLast) {
@@ -84,7 +85,7 @@ export class UI {
     }, FEEDBACK_DELAY_MS);
   }
 
-  _showFeedback(selectedIndex, correctIndex, score) {
+  _showFeedback(selectedIndex, correctIndex, score, pointsEarned, multiplier, streak) {
     const buttons = this._app.querySelectorAll('.answer-btn');
     buttons.forEach((btn, i) => {
       btn.disabled = true;
@@ -95,10 +96,21 @@ export class UI {
     const scoreEl = this._app.querySelector('.score-display strong');
     if (scoreEl) scoreEl.textContent = score;
 
+    const streakEl = this._app.querySelector('.streak-badge');
+    if (streakEl) {
+      if (streak >= 3) {
+        streakEl.textContent = streak >= 5 ? `🔥 ${streak} streak · 3×` : `🔥 ${streak} streak · 2×`;
+        streakEl.classList.add('active');
+      } else {
+        streakEl.textContent = '';
+        streakEl.classList.remove('active');
+      }
+    }
+
     if (selectedIndex === correctIndex) {
       const toast = document.createElement('div');
       toast.className = 'points-toast';
-      toast.textContent = '+10';
+      toast.textContent = multiplier > 1 ? `+${pointsEarned} ×${multiplier}` : `+${pointsEarned}`;
       this._app.querySelector('.screen-card').appendChild(toast);
     }
   }
@@ -113,7 +125,7 @@ export class UI {
 
   _onTimerExpire() {
     const result = this._engine.answer(-1);
-    this._showFeedback(-1, result.correctIndex, this._engine.getState().score);
+    this._showFeedback(-1, result.correctIndex, this._engine.getState().score, 0, 1, result.streak);
     setTimeout(() => {
       if (result.isLast) {
         this._renderResults(this._engine.getResults());

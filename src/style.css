@@ -44,6 +44,23 @@ body {
   color: #94a3b8;
 }
 
+/* Streak badge */
+.streak-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f97316;
+  background: #431407;
+  border: 1px solid #f97316;
+  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.streak-badge.active {
+  opacity: 1;
+}
+
 /* Running score */
 .score-display {
   font-size: 0.875rem;

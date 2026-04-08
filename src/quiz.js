@@ -9,6 +9,7 @@ export class QuizEngine {
   start() {
     this._index = 0;
     this._score = 0;
+    this._streak = 0;
     this._answers = [];
     this._startTime = Date.now();
     this._questionStartTime = Date.now();
@@ -26,11 +27,19 @@ export class QuizEngine {
     }
     const question = this._questions[this._index];
     const correct = answerIndex === question.correct;
-    const pointsEarned = correct ? 10 : 0;
+
+    if (correct) {
+      this._streak++;
+    } else {
+      this._streak = 0;
+    }
+
+    const multiplier = this._streak >= 5 ? 3 : this._streak >= 3 ? 2 : 1;
+    const pointsEarned = correct ? 10 * multiplier : 0;
 
     const timeTaken = Math.round((Date.now() - this._questionStartTime) / 1000);
     this._score += pointsEarned;
-    this._answers.push({ answerIndex, correct, timeTaken });
+    this._answers.push({ answerIndex, correct, timeTaken, pointsEarned, multiplier: correct ? multiplier : 1 });
     this._index++;
     this._questionStartTime = Date.now();
 
@@ -41,6 +50,8 @@ export class QuizEngine {
       correct,
       correctIndex: question.correct,
       pointsEarned,
+      multiplier: correct ? multiplier : 1,
+      streak: this._streak,
       isLast,
     };
   }
