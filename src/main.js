@@ -1,6 +1,5 @@
 import './style.css';
+import { UI } from './ui.js';
 
-document.querySelector('#app').innerHTML = `
-  <h1>Quiz Arena</h1>
-  <p>Coming soon...</p>
-`;
+const ui = new UI(document.querySelector('#app'));
+ui.init();
