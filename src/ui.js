@@ -1,12 +1,19 @@
 import { QuizEngine } from './quiz.js';
+import { Timer } from './timer.js';
 import questions from './questions.js';
 
 const FEEDBACK_DELAY_MS = 800;
+const QUESTION_TIME = 15;
 
 export class UI {
   constructor(appEl) {
     this._app = appEl;
     this._engine = new QuizEngine(questions);
+    this._timer = new Timer({
+      duration: QUESTION_TIME,
+      onTick: (t) => this._updateTimerDisplay(t),
+      onExpire: () => this._onTimerExpire(),
+    });
   }
 
   init() {
@@ -26,11 +33,11 @@ export class UI {
       this._engine.start();
       const q = this._engine.getCurrentQuestion();
       const state = this._engine.getState();
-      this._renderQuestion(q, state.currentQuestionIndex, state.total);
+      this._renderQuestion(q, state.currentQuestionIndex, state.total, state.score);
     });
   }
 
-  _renderQuestion(question, index, total) {
+  _renderQuestion(question, index, total, score = 0) {
     const answersHTML = question.answers
       .map(
         (a, i) =>
@@ -39,8 +46,13 @@ export class UI {
       .join('');
 
     this._app.innerHTML = `
-      <p class="progress-text">Question ${index + 1} of ${total}</p>
+      <div class="quiz-header">
+        <span class="progress-text">Question ${index + 1} of ${total}</span>
+        <span class="score-display">Score: <strong>${score}</strong></span>
+      </div>
       <div class="screen-card">
+        <div class="timer-bar-track"><div class="timer-bar" id="timer-bar"></div></div>
+        <p class="timer-text" id="timer-text">${QUESTION_TIME}s</p>
         <p class="question-text">${question.question}</p>
         <div class="answers-grid">${answersHTML}</div>
       </div>
@@ -51,11 +63,15 @@ export class UI {
         this._onAnswerClick(Number(btn.dataset.index));
       });
     });
+
+    this._timer.start();
   }
 
   _onAnswerClick(selectedIndex) {
+    this._timer.stop();
     const result = this._engine.answer(selectedIndex);
-    this._showFeedback(selectedIndex, result.correctIndex);
+    const { score } = this._engine.getState();
+    this._showFeedback(selectedIndex, result.correctIndex, score);
 
     setTimeout(() => {
       if (result.isLast) {
@@ -63,18 +79,50 @@ export class UI {
       } else {
         const q = this._engine.getCurrentQuestion();
         const state = this._engine.getState();
-        this._renderQuestion(q, state.currentQuestionIndex, state.total);
+        this._renderQuestion(q, state.currentQuestionIndex, state.total, state.score);
       }
     }, FEEDBACK_DELAY_MS);
   }
 
-  _showFeedback(selectedIndex, correctIndex) {
+  _showFeedback(selectedIndex, correctIndex, score) {
     const buttons = this._app.querySelectorAll('.answer-btn');
     buttons.forEach((btn, i) => {
       btn.disabled = true;
       if (i === correctIndex) btn.classList.add('correct');
       if (i === selectedIndex && selectedIndex !== correctIndex) btn.classList.add('wrong');
     });
+
+    const scoreEl = this._app.querySelector('.score-display strong');
+    if (scoreEl) scoreEl.textContent = score;
+
+    if (selectedIndex === correctIndex) {
+      const toast = document.createElement('div');
+      toast.className = 'points-toast';
+      toast.textContent = '+10';
+      this._app.querySelector('.screen-card').appendChild(toast);
+    }
+  }
+
+  _updateTimerDisplay(t) {
+    const bar = this._app.querySelector('#timer-bar');
+    const text = this._app.querySelector('#timer-text');
+    if (bar) bar.style.width = `${(t / QUESTION_TIME) * 100}%`;
+    if (bar) bar.className = `timer-bar${t <= 5 ? ' urgent' : ''}`;
+    if (text) text.textContent = `${t}s`;
+  }
+
+  _onTimerExpire() {
+    const result = this._engine.answer(-1);
+    this._showFeedback(-1, result.correctIndex, this._engine.getState().score);
+    setTimeout(() => {
+      if (result.isLast) {
+        this._renderResults(this._engine.getResults());
+      } else {
+        const q = this._engine.getCurrentQuestion();
+        const state = this._engine.getState();
+        this._renderQuestion(q, state.currentQuestionIndex, state.total, state.score);
+      }
+    }, FEEDBACK_DELAY_MS);
   }
 
   _renderResults(summary) {
