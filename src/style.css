@@ -248,5 +248,22 @@ body {
   color: #cbd5e1;
 }
 
+/* Leaderboard */
+.leaderboard-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+  color: #f1f5f9;
+}
+
+.leaderboard-table {
+  margin-top: 0;
+}
+
+.leaderboard-highlight td {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
 .text-success { color: #4ade80; }
 .text-danger  { color: #f87171; }

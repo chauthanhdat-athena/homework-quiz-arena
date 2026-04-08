@@ -1,5 +1,6 @@
 import { QuizEngine } from './quiz.js';
 import { Timer } from './timer.js';
+import { saveScore } from './leaderboard.js';
 import questions from './questions.js';
 
 const FEEDBACK_DELAY_MS = 800;
@@ -144,11 +145,23 @@ export class UI {
     const secs = summary.timeTaken % 60;
     const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
+    const board = saveScore(summary.score, summary.accuracy, summary.timeTaken);
+
     const rowsHTML = summary.answers.map((a, i) => `
       <tr>
         <td>Q${i + 1}</td>
         <td class="${a.correct ? 'text-success' : 'text-danger'}">${a.correct ? '✓' : '✗'}</td>
         <td>${a.timeTaken}s</td>
+      </tr>
+    `).join('');
+
+    const boardRowsHTML = board.map((entry, i) => `
+      <tr class="${entry.score === summary.score && entry.date === new Date().toLocaleDateString() && i === board.findIndex(e => e.score === summary.score) ? 'leaderboard-highlight' : ''}">
+        <td>${i + 1}</td>
+        <td>${entry.score}</td>
+        <td>${Math.round(entry.accuracy * 100)}%</td>
+        <td>${entry.timeTaken}s</td>
+        <td>${entry.date}</td>
       </tr>
     `).join('');
 
@@ -174,6 +187,13 @@ export class UI {
             <tr><th>Question</th><th>Result</th><th>Time</th></tr>
           </thead>
           <tbody>${rowsHTML}</tbody>
+        </table>
+        <h3 class="leaderboard-title">🏆 Leaderboard</h3>
+        <table class="breakdown-table leaderboard-table">
+          <thead>
+            <tr><th>#</th><th>Score</th><th>Accuracy</th><th>Time</th><th>Date</th></tr>
+          </thead>
+          <tbody>${boardRowsHTML}</tbody>
         </table>
         <button id="play-again-btn" class="btn-primary" style="margin-top: 1.5rem;">Play Again</button>
       </div>
