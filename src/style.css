@@ -180,24 +180,55 @@ body {
 }
 
 /* Results screen */
-.result-label {
-  font-size: 0.875rem;
-  color: #94a3b8;
+.results-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-stat {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  padding: 1rem 0.5rem;
+}
+
+.result-stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
 }
 
-.result-score {
-  font-size: 3rem;
+.result-stat-value {
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #6366f1;
-  margin-bottom: 1rem;
+  color: #f1f5f9;
 }
 
-.result-accuracy {
-  font-size: 1.25rem;
-  margin-bottom: 1.5rem;
+/* Per-question breakdown table */
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.breakdown-table th {
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #334155;
+}
+
+.breakdown-table td {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #1e293b;
+  color: #cbd5e1;
 }
 
 .text-success { color: #4ade80; }

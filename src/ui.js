@@ -128,16 +128,42 @@ export class UI {
   _renderResults(summary) {
     const pct = Math.round(summary.accuracy * 100);
     const accuracyClass = pct >= 70 ? 'text-success' : 'text-danger';
+    const mins = Math.floor(summary.timeTaken / 60);
+    const secs = summary.timeTaken % 60;
+    const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+    const rowsHTML = summary.answers.map((a, i) => `
+      <tr>
+        <td>Q${i + 1}</td>
+        <td class="${a.correct ? 'text-success' : 'text-danger'}">${a.correct ? '✓' : '✗'}</td>
+        <td>${a.timeTaken}s</td>
+      </tr>
+    `).join('');
 
     this._app.innerHTML = `
       <div class="screen-card" style="text-align: center;">
-        <p class="result-label">Final Score</p>
-        <p class="result-score">${summary.score}</p>
-        <p class="result-accuracy ${accuracyClass}">${pct}% accuracy</p>
-        <p style="color: #94a3b8; margin-bottom: 1.5rem;">
-          ${summary.answers.filter((a) => a.correct).length} / ${summary.total} correct
-        </p>
-        <button id="play-again-btn" class="btn-primary">Play Again</button>
+        <h2 style="margin-bottom: 1.5rem;">Results</h2>
+        <div class="results-stats">
+          <div class="result-stat">
+            <p class="result-stat-label">Final Score</p>
+            <p class="result-stat-value" style="color: #6366f1;">${summary.score}</p>
+          </div>
+          <div class="result-stat">
+            <p class="result-stat-label">Accuracy</p>
+            <p class="result-stat-value ${accuracyClass}">${pct}%</p>
+          </div>
+          <div class="result-stat">
+            <p class="result-stat-label">Total Time</p>
+            <p class="result-stat-value">${timeStr}</p>
+          </div>
+        </div>
+        <table class="breakdown-table">
+          <thead>
+            <tr><th>Question</th><th>Result</th><th>Time</th></tr>
+          </thead>
+          <tbody>${rowsHTML}</tbody>
+        </table>
+        <button id="play-again-btn" class="btn-primary" style="margin-top: 1.5rem;">Play Again</button>
       </div>
     `;
 
